@@ -1,0 +1,15 @@
+# Resolver con SENTENCIAS AWAIT(<> y <await B,S>). Un sistema operativo mantiene 5 instancias de un recurso
+# almacenadas en una cola, cuando un proceso necesita usar una instancia de recurso la saca de la cola, la usa
+# y cuando termina de usarla la vuelve a depositar
+
+int cantRecursos = 5
+cola C;
+
+Process proceso[id: 0..N-1] {
+    <await (cantRecursos > 0) >;
+    Recurso recurso = sacarCola(C);
+    cantRecursos = cantRecursos - 1;
+    usarRecurso(recurso);
+    depositarCola(C, recurso);
+    cantRecursos = cantRecursos + 1;
+}
