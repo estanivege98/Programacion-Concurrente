@@ -1,0 +1,40 @@
+# Ejercicio 3
+# 
+# 1er error: La variable cant empieza en cero, se suma en 1, pero en el proceso Consumidor se le resta 1 y vuelve a 0, quedando en un loop
+# Version Corregida
+int cant = 0; int pri_ocupada = 0; int pri_vacia = 0; int buffer[N];
+Process Productor:
+{ while (true) 
+	{ produce elemento
+	  <await (cant < N); cant++; buffer[pri_vacia] = elemento>
+	  pri_vacia = (pri_vacia + 1) mod N;
+	}
+}
+
+Process Consumidor:
+{ while (true) {
+	<await (cant > 0); cant--; elemento = buffer[pri_ocupada];>
+	pri_ocupada = (pri_ocupada + 1) mod N;
+	consume elemento
+	}
+}
+
+# Parte B
+int cant = 0; int pri_ocupada = 0; pri_vacia = 0; int buffer[N]; 
+Process Productor [id: 0..P-1]
+{
+	while (true){
+		produce elemento
+	  	<await (cant < N); cant++; buffer[pri_vacia] = elemento>
+	 	pri_vacia = (pri_vacia + 1) mod N;
+	}
+}
+
+Process Consumidor [id: 0..C-1]:
+{ while (true) {
+	<await (cant > 0); cant--; elemento = buffer[pri_ocupada];>
+	pri_ocupada = (pri_ocupada + 1) mod N;
+	consume elemento
+	}
+}
+

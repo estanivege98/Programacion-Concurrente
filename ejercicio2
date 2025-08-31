@@ -1,0 +1,10 @@
+# Ejercicio 2
+int total = 0;
+int[] vector;
+Process A [i = 1 to M-1] {
+	if (vector[i] == N)
+	<total++>;
+}
+
+
+	
