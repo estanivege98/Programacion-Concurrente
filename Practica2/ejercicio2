@@ -1,0 +1,87 @@
+#Un sistema de control cuenta con 4 procesos que realizan chequeos en forma
+#colaborativa. Para ello, reciben el historial de fallos del día anterior (por simplicidad, de
+#tamaño N). De cada fallo, se conoce su número de identificación (ID) y su nivel de
+#gravedad (0=bajo, 1=intermedio, 2=alto, 3=crítico). Resuelva considerando las siguientes
+#situaciones:
+
+#a) Se debe imprimir en pantalla los ID de todos los errores críticos (no importa el
+#orden).
+
+#b) Se debe calcular la cantidad de fallos por nivel de gravedad, debiendo quedar los
+#resultados en un vector global.
+
+#c) Ídem b) pero cada proceso debe ocuparse de contar los fallos de un nivel de
+#gravedad determinado.
+
+## Inciso a
+
+sem mutex = 1;
+ColaFallos c[N];
+int cant = 0;
+Process Check[PID: 0..3]{
+    Fallo f;
+    int nivelFallo;
+    P(mutex);
+    while(cant < N){
+        f = c.pop();
+        cant++;
+        V(mutex);
+        nivel = f.nivel;
+        if(nivel == 3){
+            print(f.ID);
+        }
+        P(mutex);
+    }
+}
+
+## Inciso b
+sem mutex = 1;
+ColaFallos c[N];
+int cant = 0;
+array niveles[4] = ([4] 0);
+
+Process Check[PID: 0..3]{
+    Fallo f;
+    int nivelFallo;
+    P(mutex);
+    while(cant < N){
+        f = c.pop();
+        cant++;
+        V(mutex);
+        nivelFallo = f.nivel;
+        if(nivelFallo == 3){
+            print(f.ID);
+        }
+        P(mutex);
+        niveles[nivelFallo]++;
+        V(mutex);
+    }
+}
+
+## Inciso c
+sem mutex = 1;
+ColaFallos c[N];
+int cant = 0;
+array niveles[4] = ([4] 0);
+array contadores[4] = ([4] 0);
+array procesos[4] = ([4] 0..3); // Cada proceso se encarga de un nivel de fallo
+Process Check[PID: 0..3]{
+    Fallo f;
+    int nivelFallo;
+    P(mutex);
+    while(cant < N){
+        f = c.pop();
+        cant++;
+        V(mutex);
+        nivelFallo = f.nivel;
+        if(nivelFallo == 3){
+            print(f.ID);
+        }
+        if(nivelFallo == procesos[PID]){
+            contadores[PID]++;
+        }
+        P(mutex);
+        niveles[nivelFallo]++;
+        V(mutex);
+    }
+}

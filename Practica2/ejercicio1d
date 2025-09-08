@@ -1,0 +1,9 @@
+#d. Modifique la solución anterior para el caso en que cada persona pueda pasar más de
+una vez, siendo aleatoria esa cantidad de veces.
+
+sem mutex = 3;
+int random;
+
+Process Persona{
+
+}

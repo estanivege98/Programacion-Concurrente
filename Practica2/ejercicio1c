@@ -1,0 +1,9 @@
+#c. Modifique su solución para el caso que haya tres detectores.
+
+sem mutex = 3;
+
+Process Persona[i: 1..N-1]{
+    P(mutex);
+    chequeado;
+    V(mutex);
+}
