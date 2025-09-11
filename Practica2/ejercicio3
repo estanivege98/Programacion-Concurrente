@@ -1,0 +1,23 @@
+#Un sistema operativo mantiene 5 instancias de un recurso almacenadas en una cola.
+#Además, existen P procesos que necesitan usar una instancia del recurso. Para eso, deben
+#sacar la instancia de la cola antes de usarla. Una vez usada, la instancia debe ser encolada
+#nuevamente para su reúso.
+
+cola c[5];
+sem mutex = 1;
+int libres = 5;
+
+Process recurso[1..P]{
+while(true){
+    P(libres);
+    P(mutex);
+    resul = c.pop();
+    V(mutex);
+    
+    consumir_recurso(resul);
+    
+    P(mutex);
+    c.push(resul);
+    V(mutex);
+    V(libres);
+}
