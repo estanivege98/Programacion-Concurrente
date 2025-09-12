@@ -47,3 +47,92 @@ Process Impresora{
     imprimir(c.pop());
     V(disponible);
 }
+
+# Inciso c
+int proximo = 0;
+sem espera[P] = ([P] 0);
+
+Process Persona[id: 0..N-1]{
+    Documento doc;
+    if(proximo != id) P(espera[id]);
+    while(true){
+        doc = generarDocumento();
+        Imprimir(doc);
+        proximo++;
+        V(espera[proximo]);
+    }
+
+}
+
+# Inciso d
+Cola c[D];
+sem mutex = 1;
+sem listo = 0;
+sem lleno = 0;
+seme espera[P] = ([P] 0);
+
+process Persona[id: 0..N-1]{
+    Documento doc;
+    while(true){
+        doc = generarDocumento();
+        P(mutex);
+        c.push(doc);
+        V(mutex);
+        V(lleno);
+        P(espera[id]);
+        Imprimir(doc);
+        V(listo);
+    }
+}
+
+Process Coordinador{
+    int aux;
+    for i = 0 to P-1{
+        P(lleno);
+        P(mutex);
+        aux = c.pop();
+        V(mutex);
+        V(espera[aux]);
+        P(listo);
+    }
+}
+
+# Inciso e
+Cola c[D];                        // Cola de documentos a imprimir
+sem mutex = 1;                    // Semáforo para exclusión mutua al acceder a la cola
+sem lleno = 0;                    // Semáforo que indica si hay documentos en la cola
+sem espera[P] = ([P] 0);          // Semáforos para que cada persona espere su turno
+int impresora[5] = {0,1,2,3,4};   // Array que representa las 5 impresoras disponibles
+sem impresoraLibre = 5;           // Semáforo que indica cuántas impresoras están libres
+sem mutexImpresora = 1;           // Semáforo para exclusión mutua al acceder a la lista de impresoras
+
+Process Persona[id: 0..N-1]{      // Proceso que representa a cada persona
+    Documento doc;                // Documento a imprimir
+    P(mutex);                     // Espera acceso exclusivo a la cola
+    c.push(doc);                  // Agrega el documento a la cola
+    V(mutex);                     // Libera acceso exclusivo a la cola
+    V(lleno);                     // Señala que hay un documento disponible
+    P(espera[id]);                // Espera a que el coordinador le indique que puede imprimir
+    Imprimir(doc, impresora[id]); // Imprime el documento en la impresora asignada
+    P(mutexImpresora);            // Espera acceso exclusivo a la lista de impresoras
+    impresora.push(impresora[id]);// Devuelve la impresora utilizada a la lista de disponibles
+    V(mutexImpresora);            // Libera acceso exclusivo a la lista de impresoras
+    V(impresoraLibre);            // Señala que hay una impresora libre
+}
+
+Process Coordinador{               // Proceso que coordina la asignación de impresoras
+    int aux;                      // Variable auxiliar para el documento
+    int impAux;                   // Variable auxiliar para la impresora
+    for i = 0 to P-1{             // Itera por cada persona
+        P(lleno);                 // Espera a que haya un documento en la cola
+        P(mutex);                 // Espera acceso exclusivo a la cola
+        aux = c.pop();            // Extrae un documento de la cola
+        V(mutex);                 // Libera acceso exclusivo a la cola
+        P(impresoraLibre);        // Espera a que haya una impresora libre
+        P(mutexImpresora);        // Espera acceso exclusivo a la lista de impresoras
+        impAux = impresora.pop(); // Extrae una impresora de la lista de disponibles
+        V(mutexImpresora);        // Libera acceso exclusivo a la lista de impresoras
+        impresora[aux] = impAux;  // Asigna la impresora al documento/persona correspondiente
+        V(espera[aux]);           // Señala a la persona que puede imprimir
+    }
+}
