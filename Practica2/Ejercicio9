@@ -1,0 +1,58 @@
+# Resolver el funcionamiento en una fábrica de ventanas con 7 empleados (4 carpinteros, 1 vidriero y 2 armadores) que trabajan de la siguiente manera:
+
+Los carpinteros continuamente hacen marcos (cada marco es armado por un único carpintero) y los deja en un depósito con capacidad de almacenar 30 marcos.
+El vidriero continuamente hace vidrios y los deja en otro depósito con capacidad para 50 vidrios.
+Los armadores continuamente toman un marco y un vidrio (en ese orden) de los depósitos correspondientes y arman la ventana (cada ventana es armada por un único armador).
+
+Cola colaMarcos; // Capacidad 30
+Cola colaVidrios; // Capacidad 50
+
+sem mutexMarcos = 1; // para proteger la cola de marcos
+sem mutexVidrios = 1; // para proteger la cola de vidrios
+
+sem espaciosMarcos = 30; // para controlar la capacidad de la cola de marcos
+sem espaciosVidrios = 50; // para controlar la capacidad de la cola de vidrios
+
+sem hayMarcos = 0; // para contar los marcos disponibles
+sem hayVidrios = 0; // para contar los vidrios disponibles
+
+Process Carpintero[id: 0..3] {
+    while (true) {
+        // fabricar marco
+        Marco m = fabricarMarco();
+        P(espaciosMarcos); // espera espacio en la cola de marcos
+        P(mutexMarcos);
+        colaMarcos.push(m);
+        V(mutexMarcos);
+        V(hayMarcos); // indica que hay un nuevo marco disponible
+    }
+}
+Process Vidriero {
+    while (true) {
+        // fabricar vidrio
+        Vidrio v = fabricarVidrio();
+        P(espaciosVidrios); // espera espacio en la cola de vidrios
+        P(mutexVidrios);
+        colaVidrios.push(v);
+        V(mutexVidrios);
+        V(hayVidrios); // indica que hay un nuevo vidrio disponible
+    }
+}
+Process Armador[id: 0..1] {
+    while (true) {
+        P(hayMarcos); // espera que haya un marco disponible
+        P(mutexMarcos);
+        Marco m = colaMarcos.pop();
+        V(mutexMarcos);
+        V(espaciosMarcos); // indica que hay un espacio libre en la cola de marcos
+
+        P(hayVidrios); // espera que haya un vidrio disponible
+        P(mutexVidrios);
+        Vidrio v = colaVidrios.pop();
+        V(mutexVidrios);
+        V(espaciosVidrios); // indica que hay un espacio libre en la cola de vidrios
+
+        // armar ventana
+        armarVentana(m, v);
+    }
+}

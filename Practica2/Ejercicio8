@@ -1,0 +1,60 @@
+#Una fábrica de piezas metálicas debe producir T piezas por día. 
+Para eso, cuenta con E empleados que se ocupan de producir las piezas de a una por vez. 
+La fábrica empieza a producir una vez que todos los empleados llegaron. Mientras haya piezas por fabricar, los empleados tomarán una y la realizarán. 
+Cada empleado puede tardar distinto tiempo en fabricar una pieza. 
+Al finalizar el día, se debe conocer cual es el empleado que más piezas fabricó.
+
+# Inciso a:  Implemente una solución asumiendo que T > E.
+# b) Implemente una solución que contemple cualquier valor de T y E.
+int restantes = T; // piezas restantes por fabricar
+int contador[E] = ([E] 0); // contador de piezas por empleado
+int llegaron = 0; // para barrera inicial
+
+sem mutex = 1; // para proteger la variable 'restantes'
+sem barreraInicio = 0; // para la barrera inicial
+
+Process Empleado[id: 0..E-1] {
+    int piezas = 0; // piezas fabricadas por este empleado
+    P(mutex);
+    llegaron++;
+    if (llegaron == E){
+        // ultimo en llegar -> desbloquea a todos
+        for (int i = 0; i < E; i++) V(barreraInicio);
+    }
+    V(mutex);
+    P(barreraInicio); // espera a que todos lleguen
+    // Comienza la producción
+    bool seguir = true;
+    while (seguir) {
+        P(mutex);
+        if(restantes > 0) {
+            restantes--;
+            V(mutex);
+            // fabricar pieza 
+            fabricarPieza();
+            P(mutex);
+            condador[id]++;
+            piezas++;
+            V(mutex);
+        }
+        else {
+            seguir = false; // no quedan piezas
+            V(mutex);
+        }
+    }
+}
+
+Process Fabrica{
+    // espera fin de dia (esperar a que todos los empleados terminen)
+    int maxPiezas = 0;
+    int mejorEmpleado = -1;
+    for (int i = 0; i < E; i++) {
+        if (contador[i] > maxPiezas) {
+            maxPiezas = contador[i];
+            mejorEmpleado = i;
+        }
+    }
+    // informar mejorEmpleado y maxPiezas
+    printf("Mejor empleado: %d\n", mejorEmpleado);
+    printf("Piezas fabricadas: %d\n", maxPiezas);
+}
