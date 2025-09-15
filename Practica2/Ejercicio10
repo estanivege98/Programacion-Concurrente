@@ -9,6 +9,7 @@ sem camionMaiz = 5; // para que los camiones de maíz esperen
 int cantCamionesTrigo = T; // contador de camiones de trigo descargando
 int cantCamionesMaiz = M; // contador de camiones de maíz descargando
 
+b)
 Process CamionTrigo[id: 1..T] {
     P(camionTrigo); // espera que no haya más de 5 camiones de trigo
     P(lugaresLibres); // espera que haya un lugar libre
