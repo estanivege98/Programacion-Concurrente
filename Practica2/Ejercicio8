@@ -9,9 +9,14 @@ Al finalizar el día, se debe conocer cual es el empleado que más piezas fabric
 int restantes = T; // piezas restantes por fabricar
 int contador[E] = ([E] 0); // contador de piezas por empleado
 int llegaron = 0; // para barrera inicial
+int cantidad = 0;
+int maxPiezas = -1;
+int mejorEmpleado = -1;
 
+sem mutex2 = 1; // para proteger la variable 'llegaron'
 sem mutex = 1; // para proteger la variable 'restantes'
 sem barreraInicio = 0; // para la barrera inicial
+sem terminoDia = 0; // para esperar fin de dia
 
 Process Empleado[id: 0..E-1] {
     int piezas = 0; // piezas fabricadas por este empleado
@@ -24,37 +29,21 @@ Process Empleado[id: 0..E-1] {
     V(mutex);
     P(barreraInicio); // espera a que todos lleguen
     // Comienza la producción
-    bool seguir = true;
-    while (seguir) {
+    P(mutex);
+    while (restantes > 0) {
+        restantes--;
+        V(mutex);
+        contador[id]++;
+        // fabricar pieza 
+        fabricarPieza();
         P(mutex);
-        if(restantes > 0) {
-            restantes--;
-            V(mutex);
-            // fabricar pieza 
-            fabricarPieza();
-            P(mutex);
-            condador[id]++;
-            piezas++;
-            V(mutex);
-        }
-        else {
-            seguir = false; // no quedan piezas
-            V(mutex);
-        }
     }
-}
-
-Process Fabrica{
-    // espera fin de dia (esperar a que todos los empleados terminen)
-    int maxPiezas = 0;
-    int mejorEmpleado = -1;
-    for (int i = 0; i < E; i++) {
-        if (contador[i] > maxPiezas) {
-            maxPiezas = contador[i];
-            mejorEmpleado = i;
-        }
+    V(mutex);
+    // terminó su producción
+    P(mutex2);
+    if (contador[id] > maxPiezas) {
+        maxPiezas = contador[id];
+        mejorEmpleado = id;
     }
-    // informar mejorEmpleado y maxPiezas
-    printf("Mejor empleado: %d\n", mejorEmpleado);
-    printf("Piezas fabricadas: %d\n", maxPiezas);
+    V(mutex2);
 }
