@@ -1,0 +1,32 @@
+#Existen N procesos que deben leer información de una base de datos, la cual es administrada por un motor que admite una cantidad 
+limitada de consultas simultáneas.
+
+#a) Analice el problema y defina qué procesos, recursos y monitores serán necesarios/convenientes, además de las posibles 
+sincronizaciones requeridas para resolver el problema.
+
+#b) Implemente el acceso a la base por parte de los procesos, sabiendo que el motor de base de datos puede atender a lo sumo 
+5 consultas de lectura simultáneas.
+
+#a) Procesos: N procesos lectores que desean acceder a la base de datos.
+Recursos: Un monitor que controle el acceso a la base de datos y una variable para contar el número de lectores activos.
+Monitores: Un monitor "BaseDeDatos" que gestione el acceso concurrente a la base de datos.
+Sincronizaciones: Se necesita una variable de condición para que los lectores esperen si ya hay 5 lectores activos.
+
+#b) Aquí está una posible implementación en pseudocódigo:
+Monitor BaseDeDatos
+    int nr = 0; // número de lectores activos
+    cond puedeLeer; // condición para que los lectores esperen
+    Procedure pasar(){
+        while (nr == 5) wait(puedeLeer); // espera si ya hay 5 lectores
+        nr = nr + 1; // incrementa el contador de lectores
+    }
+    Procedure terminar(){
+        nr = nr - 1; // decrementa el contador de lectores
+        signal(puedeLeer); // señala a un lector en espera que puede proceder
+    }
+}
+Process Lector[id: 1..N]
+    BaseDeDatos.pasar();
+    // "el lector accede a la base de datos"
+    BaseDeDatos.terminar();
+}
