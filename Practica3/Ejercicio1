@@ -1,0 +1,46 @@
+# Se dispone de un puente por el cual puede pasar un solo auto a la vez. Un auto pide permiso para pasar por el puente, cruza por el mismo y luego sigue su camino
+
+Monitor Puente
+ cond cola;
+ int cant= 0;
+ Procedure entrarPuente ()
+ while ( cant > 0) wait (cola);
+ cant = cant + 1;
+ end;
+ Procedure salirPuente ()
+ cant = cant – 1;
+ signal(cola);
+ end;
+End Monitor;
+Process Auto [a:1..M]
+ Puente. entrarPuente (a);
+ “el auto cruza el puente”
+ Puente. salirPuente(a);
+End Process;
+
+#a. ¿El código funciona correctamente? Justifique su respuesta.
+
+#b. ¿Se podría simplificar el programa? ¿Sin monitor? ¿Menos procedimientos? ¿Sin variable condition? En caso afirmativo, rescriba el código.
+
+#c. ¿La solución original respeta el orden de llegada de los vehículos? Si rescribió el código en el punto b), ¿esa solución respeta el orden de llegada?
+
+#a: Sí, el código funciona correctamente. 
+El monitor "Puente" asegura que solo un auto pueda cruzar el puente a la vez mediante el uso de una variable de condición "cola" y un contador "cant". 
+Cuando un auto quiere entrar al puente, verifica si hay otros autos cruzando (cant > 0) y, si es así, espera en la cola. Una vez que el auto termina de cruzar, 
+decrementa el contador y señala a cualquier auto en espera que puede proceder.
+
+#b: Sí, se podría simplificar haciendo que el monitor represente el cruce del puente sin necesidad de una variable de condición.
+Aquí hay una versión simplificada:
+Monitor Puente
+    Procedure cruzarPuente ()
+        // Espera hasta que el puente esté libre
+    end;
+End Monitor;
+Process Auto [a:1..M]
+    Puente.cruzarPuente();
+    // "el auto cruza el puente"
+End Process;
+
+#c: No, la solución original no respeta el orden de llegada de los vehículos debido a que los autos que llegan después pueden cruzar antes si el puente está libre.
+
+
