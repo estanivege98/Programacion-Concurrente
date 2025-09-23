@@ -1,0 +1,151 @@
+#En un corralón de materiales se deben atender a N clientes de acuerdo con el orden de llegada.
+#Cuando un cliente es llamado para ser atendido, entrega una lista con los productos que
+#comprará, y espera a que alguno de los empleados le entregue el comprobante de la compra
+#realizada.
+
+#a) Resuelva considerando que el corralón tiene un único empleado.
+#b) Resuelva considerando que el corralón tiene E empleados (E > 1). Los empleados no
+#deben terminar su ejecución.
+#c) Modifique la solución (b) considerando que los empleados deben terminar su ejecución
+#cuando se hayan atendido todos los clientes.
+
+#Inciso a)
+Monitor Corralon{
+    Cola colaEspera; // cola de clientes esperando ser atendidos
+    cond atendidos[N];
+    Comprobante comprobantes[N];
+    cond hayClientes; // condición para que los empleados esperen si no hay clientes
+
+    Procedure entradaCliente(int idCliente, Lista listaProductos, out Comprobante com){
+        ColaEspera.push((idCliente, listaProductos));
+        signal(hayClientes); // señala a un empleado que hay un cliente esperando
+        wait(atendidos[idCliente]); // espera a ser atendido
+        com = comprobantes[idCliente]; // recibe el comprobante de compra
+    }
+
+    Procedure esperarCliente(out int idCliente, out Lista listaProductos){
+        if(ColaEspera.isEmpty()){
+            wait(hayClientes); // espera a que haya clientes
+        }
+        (idCliente, listaProductos) = ColaEspera.pop(); // atiende al siguiente cliente
+    }
+
+    Procedure entregarComprobante(int idEmpleado, int idCliente, Comprobante com){
+        comprobantes[idCliente] = com; // guarda el comprobante para el cliente
+        signal(atendidos[idCliente]); // señala al cliente que ha sido atendido
+    }
+}
+
+Process Cliente[id: 1..N]
+    Lista listaProductos; // lista de productos a comprar
+    Comprobante com;
+    Corralon.entradaCliente(id, listaProductos, com);
+    // "el cliente recibe el comprobante y se retira"
+}
+
+Process Empleado // único empleado
+    int idCliente;
+    Lista listaProductos;
+    Comprobante com;
+    while (true) {
+        Corralon.esperarCliente(idCliente, listaProductos);
+        com = realizarComprobante(listaProductos);
+        Corralon.entregarComprobante(idCliente, com);
+    }
+}
+
+#Inciso b)
+Monitor Corralon{
+    Cola colaEspera;
+    cond atendidos[N];
+    Comprobante comprobantes[N];
+    cond hayClientes;
+
+    Procedure entradaCliente(int idCliente, Lista listaProductos, out Comprobante com){
+        ColaEspera.push((idCliente, listaProductos));
+        signal(hayClientes);
+        wait(atendidos[idCliente]);
+        com = comprobantes[idCliente];
+    }
+
+    Procedure esperarCliente(out int idCliente, out Lista listaProductos){
+        while(ColaEspera.isEmpty()){
+            wait(hayClientes);
+        }
+        (idCliente, listaProductos) = ColaEspera.pop();
+    }
+
+    Procedure entregarComprobante(int idEmpleado, int idCliente, Comprobante com){
+        comprobantes[idCliente] = com;
+        signal(atendidos[idCliente]);
+    }
+}
+Process Cliente[id: 1..N]
+    Lista listaProductos;
+    Comprobante com;
+    Corralon.entradaCliente(id, listaProductos, com);
+    // "el cliente recibe el comprobante y se retira"
+}
+Process Empleado[id: 1..E] // E empleados
+    int idCliente;
+    Lista listaProductos;
+    Comprobante com;
+    while (true) {
+        Corralon.esperarCliente(id, idCliente, listaProductos);
+        com = realizarComprobante(listaProductos);
+        Corralon.entregarComprobante(id, idCliente, com);
+    }
+}
+
+#Inciso c)
+Monitor Corralon{
+    Cola colaEspera;
+    cond atendidos[N];
+    Comprobante comprobantes[N];
+    cond hayClientes;
+    int clientesAtendidos = 0; // contador de clientes atendidos
+
+    Procedure entradaCliente(int idCliente, Lista listaProductos, out Comprobante com){
+        ColaEspera.push((idCliente, listaProductos));
+        signal(hayClientes);
+        wait(atendidos[idCliente]);
+        com = comprobantes[idCliente];
+    }
+
+    Procedure esperarCliente(out int idCliente, out Lista listaProductos, out bool finAtencion){
+        finAtencion = false;
+        while(ColaEspera.isEmpty() && clientesAtendidos < N){
+            wait(hayClientes);
+        }
+        if(clientesAtendidos >= N){
+            finAtencion = true; // indica que no hay más clientes por atender
+            return;
+        }
+        (idCliente, listaProductos) = ColaEspera.pop();
+    }
+
+    Procedure entregarComprobante(int idEmpleado, int idCliente, Comprobante com){
+        comprobantes[idCliente] = com;
+        signal(atendidos[idCliente]);
+        clientesAtendidos++; // incrementa el contador de clientes atendidos
+    }
+}
+Process Cliente[id: 1..N]
+    Lista listaProductos;
+    Comprobante com;
+    Corralon.entradaCliente(id, listaProductos, com);
+    // "el cliente recibe el comprobante y se retira"
+}
+Process Empleado[id: 1..E] // E empleados
+    int idCliente;
+    Lista listaProductos;
+    Comprobante com;
+    bool finAtencion = false;
+    while (!finAtencion) {
+        Corralon.esperarCliente(id, idCliente, listaProductos, in finAtencion);
+        if(!finAtencion){
+            com = realizarComprobante(listaProductos);
+            Corralon.entregarComprobante(id, idCliente, com);
+        }
+    }
+}
