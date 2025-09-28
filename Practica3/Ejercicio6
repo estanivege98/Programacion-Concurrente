@@ -13,12 +13,83 @@ Process Alumno[id: 1..50]{
     int nota;
 
     Tarea.esperarFila(id);
-    Tarea.asignarNroGrupo(nroGrupo);
+    Tarea.obtenerGrupo(id, nroGrupo);
     realizarTarea();
     Tarea.obtenerNota(nroGrupo, nota);
 
 }
 
 Process JTP{
-    
+    int i, nroGrupo;
+    int vecContadorGrupos[25] = [(25) 0];
+    int nota = 25;
+    Tarea.esperarAlumnos();
+    for i: 1..50 {
+        Tarea.asignarTemas(AsignarNroGrupo());
+    }
+    for i: 1..50 {
+        Tarea.corregirTarea(nroGrupo);
+        vecContadorGrupos[nroGrupo]++;
+        if(vecContadorGrupos[nroGrupo] == 2) {
+            Tarea.asignarNota(nroGrupo, nota);
+            nota--;
+        }
+    }
+}
+
+Monitor Tarea {
+    Cola espera, esperaNota;
+    int alumnosEsperando = 0;
+    int vecGrupo[50]; // índice: id del alumno, valor: nro de grupo
+    int vecNotas[25]; // índice: nro de grupo, valor: nota
+    cond espera[50]; // un cond por alumno
+    cond esperaNotas[50]; // un cond por grupo
+    cond corrige;
+
+    Procedure esperarFila(id: in int) {
+        alumnosEsperando++;
+        espera.Push(id);
+        if (alumnosEsperando == 50) {
+            signal(esperaAsignar);
+        }
+    }
+
+    Procedure esperarAlumnos() {
+        if (alumnosEsperando < 50) {
+            wait(esperaAsignar);
+        }
+    }
+
+    Procedure obtenerGrupo(id: in int, nroGrupo: out int) {
+        wait (espera[id]);
+        nroGrupo = vecGrupo[id];
+    }
+
+    Procedure asignarTemas(nroGrupo: in int) {
+        int id = espera.Pop();
+        vecGrupo[id] = nroGrupo;
+        signal(espera[id]);
+    }
+
+    Procedure corregirTarea(nroGrupo: out int){
+        if(esperaNotas.isEmpty()) {
+            wait(corrige);
+        }
+        int id = esperaNotas.Pop();
+        nroGrupo = vecGrupo[id];
+    }
+
+    Procedure obtenerNota(nroGrupo: in int, nota: in int) {
+        vecNotas[nroGrupo] = nota;
+        signal_all(esperaNotas[nroGrupo]);
+    }
+
+    Procedure asignarNota(nroGrupo: in int, nota: out int) {
+        esperaNotas.Push(nroGrupo);
+        signal(corrige);
+        wait(esperaNotas[nroGrupo]);
+        nota = vecNotas[nroGrupo];
+    }
+
+
 }
