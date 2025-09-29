@@ -10,9 +10,9 @@ Process Corredor[id: 1..C] {
     Carrera.esperarInicio();
     //corre
     //finaliza carrera
-    Carrera.accederMaquina();
+    Fila.accederMaquina();
     Maquina.usar();
-    Carrera.salirMaquina();
+    Fila.salirMaquina();
 }
 
 Process Repositor {
@@ -35,7 +35,10 @@ Monitor Carrera {
             wait(inicioCarrera);
         }
     }
+ 
+}
 
+Monitor Fila {
     Procedure accederMaquina() {
         if (!libre) {
             esperandoMaquina++;
@@ -71,7 +74,7 @@ Monitor Maquina {
             wait(faltaBotellas);
         }
         //reponer 20 botellas
-        botellas = 20;
+        botellas++;
         signal(puedeUsar);
     }
 }
