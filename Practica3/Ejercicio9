@@ -15,5 +15,50 @@ Process Alumno[id: 1..45]{
 }
 
 Process Profesora{
-    
+    int i, idAlumno, nota;
+    text examen;
+    for i: 1..45 do{
+        Aula.recibirExamen(idAlumno, examen);
+        nota = corregirExamen(examen);
+        Aula.enviarNota(idAlumno, nota);
+    }
+}
+
+Process Preceptor{
+    text examen;
+    //preparar examen
+    Aula.darEnunciado(examen);
+}
+
+Monitor Aula {
+    int cantAlumnos = 0, notas[45];
+    text examen;
+    cola C;
+    cond esperarExamen, esperarPreceptor, esperarProfesora, esperandoNota;
+
+    Process llegada(E: out text){
+        cantAlumnos++;
+        if(cantAlumnos == 45) signal(esperarPreceptor);
+        wait(esperarExamen);
+        E = examen;
+    }
+    Process darEnunciado(E: in text){
+        if(cantAlumnos < 45) wait(esperarPreceptor);
+        examen = E;
+        signal_all(esperarExamen);
+    }
+    Process entregarExamen(id: in int, E: in text, N: out int){
+        C.push(id, E);
+        signal(esperarProfesora);
+        wait(esperandoNota);
+        N = notas[id];
+    }
+    Process recibirExamen(id: out int, E: out text){
+        if(C.empty()) wait(esperarProfesora);
+        (id, E) = C.pop();
+    }
+    Process enviarNota(id: in int, N: in int){
+        notas[id] = N;
+        signal(esperandoNota);
+    }
 }
