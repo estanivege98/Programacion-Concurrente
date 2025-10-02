@@ -5,3 +5,8 @@ Cada validación puede tomar un tiempo diferente y para realizarla los workers d
 función Validar(t), la cual retorna como resultado un número entero entre 0 al 9. Al finalizar el
 procesamiento, el último worker en terminar debe informar la cantidad de transacciones por cada
 resultado de la función de validación. Nota: maximizar la concurrencia. */
+
+sem mutexEspera = 1;
+sem mutexBarrera = 1;
+sem barrera = 0;
+

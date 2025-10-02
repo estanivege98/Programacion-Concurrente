@@ -55,11 +55,9 @@ Process Persona[id: 1..P]{
         V(mutex);
         P(asignado[id]);
     }
-    else{
-        terminalesLibres--;
-        V(mutex);
-    }
-
+    
+    terminalesLibres--;
+    V(mutex);
     int t;
     P(acceso);
     t = terminales.pop();
@@ -68,15 +66,14 @@ Process Persona[id: 1..P]{
     P(acceso);
     terminales.push(t);
     V(acceso);
-    
+
     P(mutex);
     terminalesLibres++;
     if(!c.empty()){
         int siguiente = c.pop();
         V(asignado[siguiente]);
     }
-    else{
-        terminalesLibres++;
+    
     }
     V(mutex);
 }
