@@ -39,6 +39,9 @@ Monitor Carrera {
 }
 
 Monitor Fila {
+    bool libre = true;
+    int esperandoMaquina = 0;
+    cond cola;
     Procedure accederMaquina() {
         if (!libre) {
             esperandoMaquina++;

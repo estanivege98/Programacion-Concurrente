@@ -1,0 +1,84 @@
+/* 1) Resolver los problemas siguientes:
+a) En una estación de trenes, asisten P personas que deben realizar una carga de su tarjeta SUBE
+en la terminal disponible. La terminal es utilizada en forma exclusiva por cada persona de acuerdo
+con el orden de llegada. Implemente una solución utilizando únicamente procesos Persona. Nota:
+la función UsarTerminal() le permite cargar la SUBE en la terminal disponible.
+b) Resuelva el mismo problema anterior pero ahora considerando que hay T terminales disponibles.
+Las personas realizan una única fila y la carga la realizan en la primera terminal que se libera.
+Recuerde que sólo debe emplear procesos Persona. Nota: la función UsarTerminal(t) le permite
+cargar la SUBE en la terminal t.*/
+
+//Inciso a)
+
+Cola c;
+bool libre = true;
+sem espera[1..P] = [(P) 0]
+sem mutex = 1;
+
+Process Persona[id: 1..P] {
+        
+        P(mutex);
+        if (!libre) {
+            c.push(id);
+            V(mutex);
+            P(espera[id]);
+        } else {
+            libre = false;
+            V(mutex);
+        }
+
+        UsarTerminal();
+        P(mutex);
+        if (!c.vacia()) {
+            int siguiente = c.pop();
+            V(espera[siguiente]);
+            
+        } else {
+            libre = true;
+            
+        }
+        V(mutex);
+
+    // Inciso b)
+
+cola c;
+sem asignado[1..P] = [(P) 0];
+sem mutex, acceso = 1;
+int terminalesLibres = T;
+cola terminales;
+
+Process Persona[id: 1..P]{
+    
+    P(mutex);
+    if(terminalesLibres == 0){
+        c.push(id);
+        V(mutex);
+        P(asignado[id]);
+    }
+    else{
+        terminalesLibres--;
+        V(mutex);
+    }
+
+    int t;
+    P(acceso);
+    t = terminales.pop();
+    V(acceso);
+    UsarTerminal(t);
+    P(acceso);
+    terminales.push(t);
+    V(acceso);
+    
+    P(mutex);
+    terminalesLibres++;
+    if(!c.empty()){
+        int siguiente = c.pop();
+        V(asignado[siguiente]);
+    }
+    else{
+        terminalesLibres++;
+    }
+    V(mutex);
+}
+
+}
