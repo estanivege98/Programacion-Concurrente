@@ -24,4 +24,57 @@
 	2) e no contiene referencias críticas, en cuyo caso x puede ser leída por otro proceso.
 	Una expresiones e que no está en una sentencia de asignación satisface la propiedad de “A lo sumo una vez” si no contiene más de una referencia crítica. Si una sentencia de asignación cumple la propiedad ASV, entonces su ejecución parece atómica, pues la variable compartida será leída o escrita sólo una vez.
 	![[Pasted image 20251001112630.png]]
-10) 
+10) a
+	1) En la tercera se cumple porque se accede solamente a una referencia critica. La primera y segunda no cumple porque hace referencia a dos variables criticas o mas.
+11) Acciones atómicas incondicionales: se ejecutan sin considerar ninguna condición previa. Siempre se realizan de manera atómica, independientemente de las circunstancias. <X=1>. Condicionales: se ejecutan cuando se cumple con una cierta condición previa. < await S; x=1> o <"await S"> (sin mayúscula).
+12) rta
+	1) Seguridad (safety): Esta propiedad se refiere a la garantía de que "nada malo le ocurre al proceso" o, en otras palabras, que no se producen estados inconsistentes o resultados incorrectos debido a la ejecución concurrente.
+		1) Una falla de seguridad indica que algo anda mal.
+		2) Ejemplos: exclusión mutua, ausencia de interferencia entre procesos, partial correctness.
+	2) Vida (liveness): Esta propiedad se relaciona con la garantía de que "eventualmente ocurre algo bueno con una actividad". Se enfoca en asegurarse de que los procesos no queden bloqueados (deadlocks) y que las actividades puedan avanzar y completarse.
+		1) Una falla de vida indica que las cosas se dejan de ejecutar.
+		2) Ejemplos: terminación, asegurar que un pedido de servicio será atendido, que un mensaje llega a destino, que un proceso eventualmente alcanzara su SC, etc. => Dependen de las políticas de scheduling.
+13) Una política de scheduling se refiere a un conjunto de reglas y algoritmos utilizados
+	para determinar cuál será el próximo proceso o hilo que se ejecutará en un sistema
+	concurrente o en un sistema operativo. Cuando se habla de ejecutar el próximo
+	proceso o hilo, se esta hablando de ejecutar las acciones atómicas de dicho proceso.
+	
+	Fairness se relaciona con la equidad en la ejecución de procesos o hilos en un sistema
+	concurrente. Se esfuerza por garantizar que todos los procesos tengan la oportunidad
+	de avanzar y realizar sus operaciones, evitando situaciones de bloqueo o inanición.
+	
+	Fairness trata de garantizar que los procesos tengan chance de avanzar, sin importar lo
+	que hagan los demás, es decir, que se ejecuten acciones atómicas de todos lo procesos.
+	
+	Tipos de Fairness:
+	Fairness Incondicional. Una política de scheduling es incondicionalmente fair si toda
+	acción atómica incondicional que es elegible eventualmente es ejecutada.
+	
+	Fairness Débil. Una política de scheduling es débilmente fair si es incondicionalmente
+	fair y toda acción atómica condicional que se vuelve elegible eventualmente es
+	ejecutada si su guarda se convierte en true y de allí en adelante permanece true.
+	
+	Fairness Fuerte. Una política de scheduling es fuertemente fair si es
+	incondicionalmente fair y toda acción atómica condicional que se vuelve elegible
+	eventualmente es ejecutada si su guarda es true con infinita frecuencia.
+	
+	Fairness incondicional: significa que todas las tareas que están listas para ejecutarse
+	eventualmente se ejecutan, sin importar si son condicionales o no.
+	
+	Fairness débil: significa que además de la fairness incondicional, las tareas
+	condicionales que se vuelven elegibles se ejecutan, siempre y cuando su condición se
+	mantenga verdadera hasta que la tarea sea asignada.
+	
+	Fairness fuerte: significa que además de la fairness incondicional, las tareas
+	condicionales que se vuelven elegibles se ejecutan, incluso si su condición cambia de
+	valor muchas veces.
+17) Algoritmo Tie-Breaker (2 procesos): protocolo de SC que requiere scheduling sólo
+débilmente fair y no usa instrucciones especiales  más complejo para n procesos.
+Usa una variable por cada proceso para indicar que el proceso comenzó a ejecutar su
+protocolo de entrada a la sección crítica, y una variable adicional para romper empates,
+indicando qué proceso fue el último en comenzar dicha entrada.
+Demora (quita prioridad) al último en comenzar su entry protocol.
+
+Algoritmo Ticket: se reparten números y se espera a que sea el turno.
+Los procesos toman un número mayor que el de cualquier otro que espera ser atendido;
+luego esperan hasta que todos los procesos con número más chico han sido atendidos.
