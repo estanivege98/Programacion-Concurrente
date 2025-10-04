@@ -6,37 +6,35 @@ función Validar(t), la cual retorna como resultado un número entero entre 0 al
 procesamiento, el último worker en terminar debe informar la cantidad de transacciones por cada
 resultado de la función de validación. Nota: maximizar la concurrencia. */
 
-sem mutexCola = 1;
-sem mutexBarrera = 1;
-sem barrera = 0;
-sem contador[10] = [(10), 1]
-int cant = 0;
-int contadorResultados[0..9] = [(9) 0];
 
-Process Worker[id: 1..7] {
-    int result;
-    Text transaccion;
-    P(mutexCola);
-    while (!c.empty()){
-        c.pop(transaccion);
-        V(mutexCola);
-        result = Validar(transaccion);
-        P(contador[result]);
-        contadorResultados[result]++;
-        V(contador[result]);
-        P(mutexCola);
+int transacciones[10000];
+int termine = 0;
+sem termino = 1;
+sem espera = 0;
+
+Process Worker[id: 1..7]{
+    int resultado[7] = (10) 0;
+    int res, t;
+    array resLocal = (10) 0; 
+    int rango = 10000 / 7;
+    for(i = id*rango to ((id+1)*rango)){
+        t = transacciones[i];
+        res = Validar(t);
+        resultado[id][res]++;
     }
-    V(mutexCola);
-    P(mutexBarrera);
-    cant++;
-    if(cant == 7){
-        for(int i = 0; i < 10; i++){
-            print("Resultado ", i, ": ", contadorResultados[i], "\n");
+    P(termino);
+    termine++;
+    int suma = 0;
+    if(termine == 7){
+        for(j = 0 to 9){
+            for(k = 1 to 7){
+                suma += resultado[k][j];
+            }
+            print("Resultado ", j, ": ", suma);
+            suma = 0;
         }
-        for (int i = 0; i < 7; i++){
-            V(barrera);
-        }
+        V(espera);
     }
-    V(mutexBarrera);
-    P(barrera);
+    V(termino);
+    P(espera);
 }

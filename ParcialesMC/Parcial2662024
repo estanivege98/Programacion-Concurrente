@@ -1,0 +1,58 @@
+
+
+/* semaforos */
+
+sem mutex = 1;
+sem espera[20] = ([20] 0);
+sem verificacion = 0;
+Cola c;
+Process Empleado{
+    int idAux;
+    while(true){
+        P(verificacion);
+        p(mutex);
+        idAux = pop(c);
+        V(mutex);
+        verificar(idAux);
+        V(espera[idAux]);
+    }
+    
+}
+
+Process Vehiculo[1..20]{
+    
+    int idVehiculo;
+    while (true){
+        P(mutex);
+        push(c, idVehiculo);
+        V(mutex);
+        V(verificacion);
+        P(espera[idVehiculo]);
+    }
+    
+}
+
+/* monitores */
+
+Process Persona[id: 1..N]{
+
+}
+
+Process Empleado{
+    Resultado res;
+    
+    while(true){
+        Fila.hacerPasar(id);
+        Ofina.atender(id);
+        Fila.salir(id);
+    }
+    
+}
+
+Monitor Ofina{
+
+}
+
+Monitor Fila{
+
+}
