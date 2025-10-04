@@ -5,7 +5,8 @@ Nota: la función Votar() permite usar la máquina.*/
 
 Process Persona[id: 1..N]{
     int edad;
-    Maquina.llegar(id, edad);
+    bool embarazada;
+    Maquina.llegar(id, edad, embarazada);
     Votar();
     Maquina.irse(id);
 }
@@ -18,11 +19,16 @@ Process AutoridadDeMesa{
 
 Monitor Maquina{
     ColaOrdenada c;
+    Cola embarazadas;
     cond espera[N];
     cond hayPedido, esperaUso;
 
-    Procedure llegar(id: in int, edad: in int){
-        c.push(id, edad);
+    Procedure llegar(id: in int, edad: in int, embarazada: in bool){
+        if(embarazada){
+            embarazadas.push(id);
+        } else {
+            c.push(id, edad);
+        }
         signal(hayPedido)
         wait(espera[id]);
     }
@@ -32,7 +38,13 @@ Monitor Maquina{
     }
 
     Procedure siguiente(){
-        if(!c.empty()){
+        if(!embarazadas.empty()){
+            int id;
+            embarazadas.pop(id);
+            signal(espera[id]);
+            wait(esperaUso);
+        }
+        else if(!c.empty()){
             int id;
             c.pop(id);
             signal(espera[id]);

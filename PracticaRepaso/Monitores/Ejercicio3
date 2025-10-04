@@ -1,0 +1,33 @@
+/* Resolver el siguiente problema. En una montaña hay 30 escaladores 
+que en una parte de la subida deben utilizar un único paso de a uno a la vez y de acuerdo con el orden de llegada al mismo. 
+Nota: sólo se pueden utilizar procesos que representen a los escaladores; cada escalador usa sólo una vez el paso.*/
+
+Process escalador[id:1..30]{
+    Paso.llegar(id);
+    Subir();
+    Paso.irse(id);
+}
+
+Monitor Paso{
+    Cola c;
+    bool libre = true;
+    cond espera[1..30];
+
+    Procedure llegar(id: in int){
+        if(!libre){
+            c.push(id);
+            wait(espera[id]);
+        } else {
+            libre = false;
+        }
+    }
+
+    Procedure irse(id: in int){
+        if(c.empty()){
+            libre = true;
+        } else {
+            int siguiente = c.pop();
+            signal(espera[siguiente]);
+        }
+    }
+}

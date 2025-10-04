@@ -1,0 +1,52 @@
+/* Resolver el siguiente problema. 
+En una empresa trabajan 20 vendedores ambulantes que forman 5 equipos de 4 personas cada uno 
+(cada vendedor conoce previamente a qué equipo pertenece). Cada equipo se encarga de vender un producto diferente. 
+Las personas de un equipo se deben juntar antes de comenzar a trabajar. 
+Luego cada integrante del equipo trabaja independientemente del resto vendiendo ejemplares del producto correspondiente.
+Al terminar cada integrante del grupo debe conocer la cantidad de ejemplares vendidos por el grupo. 
+Nota: maximizar la concurrencia. */
+
+
+Process Vendedor[id: 1..20]{
+    int equipo;
+    int cant = 0;
+    int vendidosEquipo = 0;
+    Equipo[equipo].llegar(id, equipo);
+    cant = Vender();
+    Ventas[equipo].irse(id, equipo, cant, vendidosEquipo);
+    print("El vendedor ", id, " del equipo ", equipo, " vendió ", cant, " y el equipo vendió ", vendidosEquipo, "\n");
+}
+
+Monitor Equipo[1..5]{
+    int cant = 0;
+    cond espera;
+
+    Procedure llegar(id: in int, equipo: in int){
+        cant++;
+        if(cant < 4){
+            wait(espera);
+        } else {
+            signalAll(espera);
+        }
+    }
+
+}
+
+Monitor Ventas[1..5]{
+    int total = 0;
+    cond espera;
+    int cant = 0;
+
+    Procedure irse(id: in int, equipo: in int, cantVendedor: in int, cantEquipo: out int){
+        total += cantVendedor;
+        cant--;
+        if(cant == 0){
+            cantEquipo = total;
+            total = 0;
+        } else {
+            wait(espera);
+            cantEquipo = total;
+        }
+        signal(espera);
+    }
+}
