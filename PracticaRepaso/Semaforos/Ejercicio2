@@ -6,7 +6,37 @@ función Validar(t), la cual retorna como resultado un número entero entre 0 al
 procesamiento, el último worker en terminar debe informar la cantidad de transacciones por cada
 resultado de la función de validación. Nota: maximizar la concurrencia. */
 
-sem mutexEspera = 1;
+sem mutexCola = 1;
 sem mutexBarrera = 1;
 sem barrera = 0;
+sem contador[10] = [(10), 1]
+int cant = 0;
+int contadorResultados[0..9] = [(9) 0];
 
+Process Worker[id: 1..7] {
+    int result;
+    Text transaccion;
+    P(mutexCola);
+    while (!c.empty()){
+        c.pop(transaccion);
+        V(mutexCola);
+        result = Validar(transaccion);
+        P(contador[result]);
+        contadorResultados[result]++;
+        V(contador[result]);
+        P(mutexCola);
+    }
+    V(mutexCola);
+    P(mutexBarrera);
+    cant++;
+    if(cant == 7){
+        for(int i = 0; i < 10; i++){
+            print("Resultado ", i, ": ", contadorResultados[i], "\n");
+        }
+        for (int i = 0; i < 7; i++){
+            V(barrera);
+        }
+    }
+    V(mutexBarrera);
+    P(barrera);
+}
