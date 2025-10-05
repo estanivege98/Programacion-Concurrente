@@ -37,29 +37,52 @@ En una oficina hay un empleado para atender solicitudes de N personas que vienen
 Nota: existe la función resolverTramite(solicitud) que simula que el empleado está resolviendo el trámite de una persona; todos los procesos deben terminar. */
 
 Process Persona[id: 1..N]{
-    Oficina.solicitarTramite(id);
+    Oficina.solicitarTramite(id, sol);
     Oficina.esperarResultado(id, res);
 }
 
 Process Empleado{
-    Oficina.atenderProximo();
+    Oficina.atenderProximo(sol, res);
 }
 
 Monitor Oficina{
-    Cola c;
-    cond esperando, resultadoListo;
+    Cola Csolicitudes, CTramites;
+    cond resultadoListo;
+    cond esperando[N];
     Resultado res;
+    Solicitud sol;
     bool libre = true;
 
-    Process solicitarTramite(id){
-        push(c, id);
-        signal(esperando);
+    Process solicitarTramite(id: in int, sol: in Solicitud){
+        push(Csolicitudes, id);
+        signal(esperando[id]);
         wait(resultadoListo);
         return res;
     }
 
-    Process atenderProximo(){
+    Process atenderProximo(sol: in Solicitud, res: out Resultado){
         int idAux;
-        if(!libre)
+        while(true){
+            if(!Csolicitudes.empty()){
+                libre = false;
+                Csolicitudes.pop(sol,idAux);
+                wait(esperando[idAux]);
+                res = resolverTramite(sol);
+                CTramites.push(res,idAux);
+                signal(resultadoListo);
+            }
+            else{
+                libre = true;
+                signal(resultadoListo);
+                delay(10);
+            }
+        }
+    }
+
+    Process esperarResultado(id: in int, res: out Resultado){
+        while(libre || CTramites.empty() || CTramites.front().id != id){
+            wait(esperando[id]);
+        }
+        CTramites.pop(res,id);
     }
 }
