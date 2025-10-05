@@ -32,27 +32,34 @@ Process Vehiculo[1..20]{
     
 }
 
-/* monitores */
+/* monitores: Resolver con MONITORES el siguiente problema.
+En una oficina hay un empleado para atender solicitudes de N personas que vienen a realizar un trámite, en orden de llegada. Cada persona espera a que el empleado atienda su trámite y le dé el resultado. Cuando el empleado está libre atiende el siguiente pedido pendiente, y si no hay ninguno lee un libro por 10 minutos.
+Nota: existe la función resolverTramite(solicitud) que simula que el empleado está resolviendo el trámite de una persona; todos los procesos deben terminar. */
 
 Process Persona[id: 1..N]{
-
+    Oficina.solicitarTramite(id);
+    Oficina.esperarResultado(id, res);
 }
 
 Process Empleado{
+    Oficina.atenderProximo();
+}
+
+Monitor Oficina{
+    Cola c;
+    cond esperando, resultadoListo;
     Resultado res;
-    
-    while(true){
-        Fila.hacerPasar(id);
-        Ofina.atender(id);
-        Fila.salir(id);
+    bool libre = true;
+
+    Process solicitarTramite(id){
+        push(c, id);
+        signal(esperando);
+        wait(resultadoListo);
+        return res;
     }
-    
-}
 
-Monitor Ofina{
-
-}
-
-Monitor Fila{
-
+    Process atenderProximo(){
+        int idAux;
+        if(!libre)
+    }
 }
