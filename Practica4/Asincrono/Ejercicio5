@@ -1,0 +1,138 @@
+/* Resolver la administración de 3 impresoras de una oficina. Las impresoras son usadas por N
+administrativos, los cuales están continuamente trabajando y cada tanto envían documentos
+a imprimir. Cada impresora, cuando está libre, toma un documento y lo imprime, de
+acuerdo con el orden de llegada.
+a) Implemente una solución para el problema descrito.
+b) Modifique la solución implementada para que considere la presencia de un director de
+oficina que también usa las impresas, el cual tiene prioridad sobre los administrativos.
+c) Modifique la solución (a) considerando que cada administrativo imprime 10 trabajos y
+que todos los procesos deben terminar su ejecución.
+d) Modifique la solución (b) considerando que tanto el director como cada administrativo
+imprimen 10 trabajos y que todos los procesos deben terminar su ejecución.
+e) Si la solución al ítem d) implica realizar Busy Waiting, modifíquela para evitarlo.
+Nota: ni los administrativos ni el director deben esperar a que se imprima el documento.*/
+
+chan pedirImpresora(int);
+chan impresoraLibre(int);
+
+/* Inciso A*/
+Process Administrativo[id: 0..N-1]{
+    int idImpresora;
+
+    while(true){
+        // Trabajando
+        send pedirImpresora(id);
+        receive impresoraLibre(idImpresora);
+        // Imprimir documento en impresora idImpresora
+    }
+}
+Process Impresora[id: 0..2]{
+    int idAdmin;
+
+    while(true){
+        send impresoraLibre(id);
+        receive documento(doc);
+        // Imprimir documento
+    }
+}
+
+Process Coordinador{
+    int idAdmin;
+    int idImpresora;
+
+    while(true){
+        if(not empty(pedirImpresora) and not empty(impresoraLibre)){
+            receive pedirImpresora(idAdmin);
+            receive impresoraLibre(idImpresora);
+            send documento[idImpresora](doc);
+        }
+    }
+}
+
+/* Inciso B*/
+
+chan pedirPrioritatrio(int);
+chan pedirImpresora(int);
+chan impresoraLibre(int);
+
+Process Administrativo[id: 0..N-1]{
+    int idImpresora;
+
+    while(true){
+        // Trabajando
+        send pedirImpresora(id);
+        receive impresoraLibre(idImpresora);
+        // Imprimir documento en impresora idImpresora
+    }
+}
+
+Process Director{
+    int idImpresora;
+
+    while(true){
+        // Trabaja
+        send pedirPrioritario(0);
+    }
+}
+
+Process Impresora[id: 0..2]{
+    int idAdmin;
+
+    while(true){
+        send impresoraLibre(id);
+        receive documento(doc);
+        // Imprimir documento
+    }
+}
+
+Process Coordinador{
+    int idAdmin;
+    int idImpresora;
+    int idDir;
+
+    while(true){
+        if(not empty(pedirPrioritario) and not empty(impresoraLibre)){
+            receive pedirPrioritario(idDir);
+            receive impresoraLibre(idImpresora);
+            send documento[idImpresora](doc);
+        }
+        else if(not empty(pedirImpresora) and not empty(impresoraLibre) and empty(pedirPrioritario)){
+            receive pedirImpresora(idAdmin);
+            receive impresoraLibre(idImpresora);
+            send documento[idImpresora](doc);
+        }
+    }
+}
+
+/* Inciso C*/
+chan pedirImpresora(int);
+chan impresoraLibre(int);
+chan finPedidos();
+chan finImpresion();
+
+Process Administrativo[id: 0..N-1]{
+    int k;
+    for k:=0 to 9 do{
+        // Trabajando
+        send pedirImpresora(id);
+        //receive impresoraLibre(idImpresora);
+        // Imprimir documento en impresora idImpresora
+    }
+    send finPedidos();
+}
+
+Process Impresora[id: 0..2]{
+    int idImp, doc;
+    idImp := id;
+
+    while(true){
+        if(receive documento(doc)){
+            // Imprimir documento
+        }
+        else if(receive finImpresion()){
+            break;
+        }
+    }
+
+    
+}
