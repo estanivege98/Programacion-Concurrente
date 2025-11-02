@@ -1,0 +1,114 @@
+/*En un examen final hay N alumnos y P profesores. Cada alumno resuelve su examen, lo
+entrega y espera a que alguno de los profesores lo corrija y le indique la nota. Los
+profesores corrigen los exámenes respetando el orden en que los alumnos van entregando.
+a) Considerando que P=1.
+b) Considerando que P>1.
+c) Ídem b) pero considerando que los alumnos no comienzan a realizar su examen hasta
+que todos hayan llegado al aula.
+Nota: maximizar la concurrencia; no generar demora innecesaria; todos los procesos deben
+terminar su ejecución */
+
+/* Inciso A */
+Process Alumno[id: 0..N-1]{
+    int nota;
+    text examen;
+    Admin!entregarExamen(id, examen);
+    Profesor?devolverNota(nota);
+}
+
+Process Profesor{
+    int idAlumno, nota, i;
+    text examen;
+    for(i=0; i<N; i++){
+        Admin!pedido();
+        Admin?avisoExamen(idAlumno, examen);
+        nota = corregirExamen(examen);
+        Alumno[idAlumno]!devolverNota(nota);
+    }
+}
+
+Process Admin{
+    text examen;
+    int idAlumno;
+    do Alumno[*]?entregarExamen(idAlumno, examen) => C.push(idAlumno, examen);
+    (!C.isEmpty()); Profesor?pedidoo() => C.pop(idAlumno, examen); Profesor!avisoExamen(idAlumno, examen);
+    od
+}
+
+/* Inciso B */
+Process Alumno[id: 0..N-1]{
+    int nota;
+    text examen;
+    Admin!entregarExamen(id, examen);
+    Profesor[*]?devolverNota(id, nota);
+}
+
+Process Profesor[id: 0..P-1]{
+    int idAlumno, nota;
+    text examen;
+    Admin!pedido(id);
+    Admin?avisoExamen(idAlumno, examen);
+    while(idAlumno != -1){
+        nota = corregirExamen(examen);
+        Alumno[idAlumno]!devolverNota(idAlumno, nota);
+        Admin!pedido(id);
+        Admin?avisoExamen(idAlumno, examen);
+    }
+}
+
+Process Admin{
+    Cola C;
+    text examen;
+    int idAlumno, idProfesor;
+    do Alumno[*]?entragarExamen(idAlumno, examen) => C.push(idAlumno, examen);
+    (!C.isEmpty()); Profesor[*]?pedido(idProfesor) => C.pop(idAlumno, examen); Profesor[idProfesor]!avisoExamen(idAlumno, examen);
+}
+
+/* Inciso C */
+Process Alumno[id: 0..N-1]{
+    int nota;
+    text examen;
+    Barrera!llegada();
+    Barrera?comenzar();
+    text examen = resolverExamen();
+    Admin!entregarExamen(id, examen);
+    Profesor[*]?devolverNota(id, nota);
+}
+
+Proces Barrera{
+    int i;
+    for(i=0; i<P; i++){
+        Alumno[*]?llegada();
+    }
+    for(i=0; i<P; i++){
+        Alumno[i]!comenzar();
+    }
+}
+
+Process Profesor[id: 0..P-1]{
+    int idAlumno, nota;
+    text examen;
+    Admin!pedido(id);
+    Admin?avisoExamen(idAlumno, examen);
+    while(idAlumno != -1){
+        nota = corregirExamen(examen);
+        Alumno[idAlumno]!devolverNota(idAlumno, nota);
+        Admin!pedido(id);
+        Admin?avisoExamen(idAlumno, examen);
+    }
+}
+
+Process Admin{
+    Cola C
+    text examen;
+    int idAlumno, idProfesor;
+    int cantAlumnos = 0;
+    do cantAlumnos < N => Alumno[*]?entragarExamen(idAlumno, examen) => C.push(idAlumno, examen);
+    (!C.isEmpty()); Profesor[*]?pedido(idProfesor) => 
+    C.pop(idAlumno, examen); Profesor[idProfesor]!avisoExamen(idAlumno, examen); cantAlumnos++;
+    od
+    for(int i=0; i<P; i++){
+        Profesor[*]?pedido(idProfesor) => Profesor[idProfesor]!avisoExamen(-1, "");
+    }
+}
+
