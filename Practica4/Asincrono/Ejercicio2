@@ -28,7 +28,7 @@ Process Cliente[id: 0..P-1]{
 
     send buscarCaja(id);
     send hayPedido(true);
-    receive obtenerCaja[id](idCaja);
+    receive obtenerCaja(idCaja);
     send pedido[idCaja](pago, id);
     receive comprobante[id](comprobante);
     send liberarCaja(idCaja);
