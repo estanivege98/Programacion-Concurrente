@@ -16,3 +16,138 @@
 Procedure BancoA is
    TASK TYPE Cliente;
    ClienteArray: array (1..N) of Cliente;
+
+   Task Empleado is
+      entry llegada(datos: IN String, resultado OUT String);
+   end Empleado;
+
+   task body Cliente is
+      datos: String;
+      resultado: String;
+
+   begin
+      Empleado.llegada(datos, resultado);
+   end Cliente;
+
+   Task body Empleado is
+      datos: String;
+      resultado: String;
+      for:1..N loop
+         accept llegada(datos: IN String, resultado OUT String) do
+            resultado:= resolverPago(datos);
+         end llegada;
+      end loop;
+      end Empleado;
+
+begin
+   null;
+end BancoA;
+
+-- INCISO B
+
+Procedure BancoB is
+   TASK TYPE Cliente;
+   ClienteArray: array (1..N) of Cliente;
+
+   Task Empleado is
+      entry llegada(datos: IN String, resultado OUT String);
+   end Empleado;
+
+   task body Cliente is
+      datos: String;
+      resultado: String;
+
+   begin
+      select
+         Empleado.llegada(datos, resultado);
+      or
+         delay 600.0; -- 10 minutos
+         null; -- Se retira sin ser atendido
+      end select;
+   end Cliente;
+
+   Task body Empleado is
+      datos: String;
+      resultado: String;
+      for:1..N loop
+         accept llegada(datos: IN String, resultado OUT String) do
+            resultado:= resolverPago(datos);
+         end llegada;
+      end loop;
+      end Empleado;
+begin
+   null;
+end BancoB;
+
+-- INCISO C
+
+Procedure BancoC is
+
+   TASK TYPE Cliente;
+   ClienteArray: array (1..N) of Cliente;
+
+   Task Empleado is
+      entry llegada(datos: IN String, resultado OUT String);
+   end Empleado;
+
+   task body Cliente is
+      datos: String;
+      resultado: String;
+   begin
+      Select
+         Empleado.llegada(datos, resultado);
+      else
+         null;
+      end select;
+   end Cliente;
+
+   Task body Empleado is
+      datos: String;
+      resultado: String;
+      for:1..N loop
+         accept llegada(datos: IN String, resultado OUT String) do
+            resultado:= resolverPago(datos);
+         end llegada;
+      end loop;
+      end Empleado;
+begin
+   null;
+end BancoC;
+
+-- INCISO D
+
+Procedure BancoD is
+
+   TASK TYPE Cliente;
+   ClienteArray: array (1..N) of Cliente;
+
+   Task Empleado is
+      entry llegada(datos: IN String, resultado OUT String);
+   end Empleado;
+
+   task body Cliente is
+      datos: String;
+      resultado: String;
+   begin
+      select
+         Empleado.llegada(datos, resultado);
+      or
+         delay 600.0; -- 10 minutos
+         select
+            Empleado.llegada(datos, resultado);
+         else
+            null; -- Se retira sin ser atendido
+         end select;
+      end select;
+   end Cliente;
+
+   Task body Empleado is
+      datos: String;
+      resultado: String;
+      for:1..N loop
+         accept llegada(datos: IN String, resultado OUT String) do
+            resultado:= resolverPago(datos);
+         end llegada;
+      end loop;
+      end Empleado;
+   
