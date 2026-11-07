@@ -52,7 +52,7 @@ PROCEDURE BancoB IS
    BEGIN
       SELECT 
          Empleado.llegada(datos, resultado);
-      OR DELAY 10 MINUTES;
+      OR DELAY 600.0;  -- 10 minutos en segundos
          -- Cliente se retira si espera más de 10 minutos
          NULL;
       END SELECT;
@@ -84,7 +84,7 @@ PROCEDURE BancoC IS
    BEGIN
       SELECT
          Empleado.llegada(datos, resultado);
-      OR
+      OR ELSE
          -- Cliente se retira si no es atendido inmediatamente
          NULL;
       END SELECT;
@@ -120,7 +120,7 @@ PROCEDURE BancoD IS
          -- Cliente solicita atención una vez más
          SELECT
             Empleado.llegada(datos, resultado);
-         OR
+         OR ELSE
             -- Cliente se retira si no es atendido inmediatamente
             NULL;
          END SELECT;

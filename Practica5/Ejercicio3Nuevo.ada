@@ -14,6 +14,9 @@ PROCEDURE Sistema is
       ENTRY Aviso;
    END Central;
 
+   TASK Proceso1;
+   TASK Proceso2;
+   
    TASK Timer IS
       ENTRY IniciarTimer;
    END Timer;
@@ -27,8 +30,7 @@ PROCEDURE Sistema is
          END LOOP;
    END Timer;
 
-   TASK Proceso1;
-   TASK Proceso2;
+   
 
    TASK BODY Proceso1 IS
       senial: String;
